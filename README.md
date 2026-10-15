@@ -1,5 +1,9 @@
 # 🚀 Jenkins CI/CD Pipeline — Lab 1
-🚀 Jenkins CI/CD Pipeline — Lab 1
+[![Jenkins](https://img.shields.io/badge/Jenkins-2.580.1-red)](https://www.jenkins.io/)
+[![Docker](https://img.shields.io/badge/Docker-29.1.3-blue)](https://hub.docker.com/u/arijbelaid)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.31.14-blue)](https://kubernetes.io/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.1.5-green)](https://spring.io/)
+[![Maven](https://img.shields.io/badge/Maven-3.9.12-orange)](https://maven.apache.org/)
 
 
 
