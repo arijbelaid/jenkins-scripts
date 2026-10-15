@@ -708,8 +708,8 @@ kubectl get svc
 
 ### 14.3 Captures du pipeline
 
-- [Capture 25 — Exécution du build](captures/25-deploy-k8s-build.png)
-- [Capture 26 — Console du déploiement](captures/26-deploy-k8s-console.png)
+- [Capture 25 — Exécution du build](./captures/25-deploy-k8s-build.png)
+- [Capture 26 — Console du déploiement](./captures/26-deploy-k8s-console.png)
 
 ## 15. Vérification finale
 
