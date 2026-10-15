@@ -1,753 +1,770 @@
 # 🚀 Jenkins CI/CD Pipeline — Lab 1
 
-[![Jenkins](https://img.shields.io/badge/Jenkins-2.580.1-red)](https://www.jenkins.io/)
-[![Docker](https://img.shields.io/badge/Docker-29.1.3-blue)](https://hub.docker.com/u/arijbelaid)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.31.14-blue)](https://kubernetes.io/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.1.5-green)](https://spring.io/)
-[![Maven](https://img.shields.io/badge/Maven-3.9.12-orange)](https://maven.apache.org/)
+[![Jenkins](https://img.shields.io/badge/Jenkins-2.580.1-red?logo=jenkins&logoColor=white)](https://www.jenkins.io/)
+[![Docker](https://img.shields.io/badge/Docker-29.1.3-blue?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.31.14-blue?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.1.5-green?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Maven](https://img.shields.io/badge/Maven-3.9.12-orange?logo=apachemaven&logoColor=white)](https://maven.apache.org/)
+[![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Platform](https://img.shields.io/badge/Platform-Ubuntu%20Server-E95420?logo=ubuntu&logoColor=white)](https://ubuntu.com/server)
 
-Pipeline **CI/CD complet** réalisé avec **Jenkins, Maven, Docker, Kubernetes et GitHub**.
-Ce projet couvre la mise en place d'un workflow **manuel** puis d'un workflow **automatisé** pour le déploiement d'une application **Spring Boot**.
+## 📌 Présentation du projet
 
-Le projet a été réalisé sur un **cluster Kubernetes 3 nœuds** (1 master + 2 workers) sous **Ubuntu Server 26.04**.
+Ce projet consiste à mettre en place un pipeline **CI/CD** pour une application Java basée sur Spring Boot, en utilisant Jenkins, Maven, Docker, Kubernetes et GitHub.
 
----
+L'objectif est de comprendre les différentes étapes de l'intégration continue et du déploiement continu, depuis la récupération du code source jusqu'au déploiement de l'application sur un cluster Kubernetes.
 
-## 📄 Rapport complet
+Le TP comprend deux approches complémentaires :
 
-Le rapport détaillé du projet est disponible dans ce dépôt.
+- **Workflow manuel :** compilation, création de l'image Docker, publication sur Docker Hub et déploiement Kubernetes.
+- **Workflow automatisé :** utilisation de Jenkins pour automatiser le build, la création et la publication de l'image, puis le déploiement sur Kubernetes.
 
----
+Le projet est réalisé dans un environnement Ubuntu Server avec un cluster Kubernetes composé d'un nœud master et de deux workers.
 
-## 📋 Sommaire
+## 🎯 Objectifs pédagogiques
 
-* [1. Présentation](#1-présentation)
-* [2. Architecture du cluster](#2-architecture-du-cluster)
-* [3. Prérequis](#3-prérequis)
-* [4. Partie I — Workflow manuel (sans Jenkins)](#4-partie-i--workflow-manuel-sans-jenkins)
-* [5. Création du Dockerfile](#5-création-du-dockerfile)
-* [6. Build Maven et Build Docker](#6-build-maven-et-build-docker)
-* [7. Push de l'image sur Docker Hub](#7-push-de-limage-sur-docker-hub)
-* [8. Déploiement Kubernetes](#8-déploiement-kubernetes)
-* [9. Installation de Jenkins](#9-installation-de-jenkins)
-* [10. Configuration du job Freestyle `freestyle_demo`](#10-configuration-du-job-freestyle-freestyle_demo)
-* [11. Exécution du fichier Java `Test.java`](#11-exécution-du-fichier-java-testjava)
-* [12. Récupération du script depuis GitHub](#12-récupération-du-script-depuis-github)
-* [13. Déclenchement automatique (H/5)](#13-déclenchement-automatique-h5)
-* [14. Préparation de Jenkins pour Kubernetes](#14-préparation-de-jenkins-pour-kubernetes)
-* [15. Challenge — Pipeline complet `deploy_spring_k8s`](#15-challenge--pipeline-complet-deploy_spring_k8s)
-* [16. Vérification finale](#16-vérification-finale)
+- Comprendre les principes de la CI/CD.
+- Compiler une application Java avec Maven.
+- Conteneuriser une application Spring Boot avec Docker.
+- Publier une image sur Docker Hub.
+- Déployer et vérifier une application sur Kubernetes.
+- Installer et configurer Jenkins.
+- Créer et exécuter des jobs Jenkins de type Freestyle.
+- Récupérer des scripts depuis GitHub.
+- Configurer un déclenchement périodique des builds.
+- Automatiser un pipeline de déploiement de bout en bout.
 
----
-
-# 1. Présentation
-
-## 🎯 Objectif
-
-Mettre en place un **pipeline CI/CD complet** pour une application **Spring Boot** en utilisant :
-
-* **Jenkins** : Automatisation du pipeline
-* **Maven** : Build de l'application Java
-* **Docker** : Conteneurisation de l'application
-* **Kubernetes** : Orchestration et déploiement (cluster 3 nœuds)
-* **Docker Hub** : Registre d'images Docker
-* **GitHub** : Hébergement du code source et des scripts
-
-## 🛠️ Technologies utilisées
+## 🧰 Technologies utilisées
 
 | Technologie | Version | Rôle |
 |---|---|---|
 | Ubuntu Server | 26.04 | Système d'exploitation |
-| Java JDK | 17 | Runtime Java |
-| Maven | 3.9.12 | Build Java |
+| Java JDK | 17 | Compilation et exécution Java |
+| Spring Boot | 2.1.5 | Framework applicatif |
+| Maven | 3.9.12 | Compilation et packaging |
 | Docker | 29.1.3 | Conteneurisation |
-| Kubernetes | 1.31.14 | Orchestration |
+| Kubernetes | 1.31.14 | Orchestration des conteneurs |
 | Jenkins | 2.580.1 | Automatisation CI/CD |
-| containerd | 2.2.2 | Runtime de conteneurs K8s |
-| Flannel | Latest | Réseau CNI Kubernetes |
+| containerd | 2.2.2 | Runtime de conteneurs |
+| Flannel | Version à confirmer | Réseau du cluster |
+| Git et GitHub | — | Gestion du code source |
+| Docker Hub | — | Registre d'images |
+
+> **Remarque :** les versions indiquées correspondent à l'environnement décrit dans ce TP. Elles sont à vérifier avec les versions réellement installées.
+
+## 📑 Sommaire
+
+- [1. Architecture du cluster](#1-architecture-du-cluster)
+- [2. Prérequis](#2-prérequis)
+- [3. Workflow manuel sans Jenkins](#3-workflow-manuel-sans-jenkins)
+- [4. Création du Dockerfile](#4-création-du-dockerfile)
+- [5. Build Maven et Docker](#5-build-maven-et-docker)
+- [6. Publication sur Docker Hub](#6-publication-sur-docker-hub)
+- [7. Déploiement Kubernetes](#7-déploiement-kubernetes)
+- [8. Installation de Jenkins](#8-installation-de-jenkins)
+- [9. Création du job Freestyle](#9-création-du-job-freestyle)
+- [10. Compilation et exécution de Test.java](#10-compilation-et-exécution-de-testjava)
+- [11. Intégration avec GitHub](#11-intégration-avec-github)
+- [12. Déclenchement automatique](#12-déclenchement-automatique)
+- [13. Configuration de Jenkins pour Docker et Kubernetes](#13-configuration-de-jenkins-pour-docker-et-kubernetes)
+- [14. Pipeline automatisé complet](#14-pipeline-automatisé-complet)
+- [15. Vérification finale](#15-vérification-finale)
+- [16. Structure du dépôt](#16-structure-du-dépôt)
+- [17. Auteur et liens utiles](#17-auteur-et-liens-utiles)
 
 ---
 
-# 2. Architecture du cluster
+## 1. Architecture du cluster
 
-## 🎯 Objectif
-
-Déployer un **cluster Kubernetes à 3 nœuds** sur des VMs Ubuntu Server.
+Le cluster Kubernetes est composé de trois machines virtuelles Ubuntu Server.
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                        CLUSTER KUBERNETES                        │
-│                                                                  │
-│   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐     │
-│   │    MASTER    │    │   WORKER 1   │    │   WORKER 2   │     │
-│   │192.168.159.15│    │192.168.159.16│    │192.168.159.17│     │
-│   │              │    │              │    │              │     │
-│   │  - Jenkins   │    │  - Pods      │    │  - Pods      │     │
-│   │  - K8s API   │    │  - Flannel   │    │  - Flannel   │     │
-│   │  - kubectl   │    │              │    │              │     │
-│   └──────────────┘    └──────────────┘    └──────────────┘     │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-                              ▲
-                              │
-                     ┌────────┴────────┐
-                     │   DOCKER HUB    │
-                     │ arijbelaid/     │
-                     │ jenkins-demo    │
-                     └─────────────────┘
-📊 Répartition des nœuds
-Rôle	Hostname	IP	Fonction
-Master	master	192.168.159.15	Control plane + Jenkins
-Worker 1	worker1	192.168.159.16	Exécution des pods
-Worker 2	worker2	192.168.159.17	Exécution des pods
-3. Prérequis
-🎯 Objectif
-Préparer l'environnement de travail avant de commencer le TP.
+                       DEVELOPPEUR
+                            |
+                            v
+                         GitHub
+                            |
+                            v
+                     +-------------+
+                     |   Jenkins   |
+                     |    Master   |
+                     +-------------+
+                            |
+                  +---------+---------+
+                  |                   |
+                  v                   v
+             Maven Build         Docker Build
+                                      |
+                                      v
+                                Docker Hub
+                                      |
+                                      v
+                              Kubernetes Cluster
+                         +------------+------------+
+                         |            |            |
+                         v            v            v
+                      Master       Worker 1     Worker 2
+                         |            |            |
+                         +------------+------------+
+                                      |
+                                      v
+                             Spring Boot Application
+                                      |
+                                      v
+                                  NodePort
+```
 
-VM Ubuntu Server 26.04 (4 Go RAM minimum)
+### Répartition des nœuds
 
-Docker installé
+| Rôle | Hostname | Adresse IP | Fonction |
+|---|---|---|---|
+| Master | `master` | `192.168.159.15` | Control plane, API Kubernetes et Jenkins |
+| Worker 1 | `worker1` | `192.168.159.16` | Exécution des applications conteneurisées |
+| Worker 2 | `worker2` | `192.168.159.17` | Exécution des applications conteneurisées |
 
-Kubernetes (K3S / Kubeadm) installé
+> Les adresses IP sont celles documentées pour cet environnement de TP. Vérifier qu'elles correspondent à la configuration réelle des VMs avant utilisation.
 
-Maven installé
+## 2. Prérequis
 
-Java JDK 17 installé
+Avant de commencer, les éléments suivants sont nécessaires :
 
-Un compte Docker Hub
+- Une ou plusieurs machines virtuelles Ubuntu Server.
+- Java JDK 17.
+- Maven.
+- Docker.
+- Un cluster Kubernetes fonctionnel, basé sur K3s ou kubeadm.
+- `kubectl` configuré pour accéder au cluster.
+- Jenkins installé et opérationnel.
+- Un compte GitHub.
+- Un compte Docker Hub.
+- Un accès réseau permettant de télécharger les dépendances et les images.
 
-Un compte GitHub
+Vérifier les outils installés :
 
-4. Partie I — Workflow manuel (sans Jenkins)
-🎯 Objectif
-Découvrir toutes les étapes d'un déploiement manuel :
+```bash
+java -version
+mvn -version
+docker --version
+kubectl version --client
+git --version
+```
 
-Cloner le dépôt Spring Boot
+## 3. Workflow manuel sans Jenkins
 
-Compiler avec Maven
+Cette première partie permet de réaliser manuellement les principales étapes du déploiement.
 
-Construire une image Docker
+### 3.1 Récupération du code source
 
-Pousser l'image sur Docker Hub
+Le projet Spring Boot utilisé pour le TP est disponible dans le dépôt suivant :
 
-Déployer sur Kubernetes
+[Wahid007/Jenkins-Demo](https://github.com/wahid007/Jenkins-Demo)
 
-🔗 Dépôt source
-👉 https://github.com/wahid007/Jenkins-Demo
-
-bash
+```bash
 git clone https://github.com/wahid007/Jenkins-Demo.git
 cd Jenkins-Demo
-📸 Capture 01 — Clone du dépôt
-https://./captures/01-clone-repo.png
+```
 
-Nom de la capture :
+**Capture 01 — Clonage du dépôt**
 
-text
-01-clone-repo.png
-5. Création du Dockerfile
-🎯 Objectif
-Créer un fichier Dockerfile pour conteneuriser l'application Spring Boot.
+![Clonage du dépôt](captures/01-clone-repo.png)
 
-📄 Contenu du Dockerfile
-dockerfile
+### 3.2 Objectif du workflow manuel
+
+Les étapes réalisées sont :
+
+1. Récupération du code source.
+2. Compilation de l'application avec Maven.
+3. Création du Dockerfile.
+4. Construction de l'image Docker.
+5. Publication de l'image sur Docker Hub.
+6. Déploiement de l'application sur Kubernetes.
+7. Vérification de l'état des pods et du service.
+
+## 4. Création du Dockerfile
+
+Le Dockerfile permet de créer une image contenant l'application Spring Boot.
+
+```dockerfile
 FROM eclipse-temurin:17-jre
-EXPOSE 8080
+
 WORKDIR /app
-COPY target/*.jar app.jar
-CMD ["java", "-jar", "app.jar"]
-📝 Explication
-Image de base
-dockerfile
-FROM eclipse-temurin:17-jre
-Utilisation de l'image Eclipse Temurin (JDK 17 léger).
 
-Port exposé
-dockerfile
+COPY target/*.jar app.jar
+
 EXPOSE 8080
-Le conteneur expose le port HTTP 8080.
 
-Dossier de travail
-dockerfile
-WORKDIR /app
-Tous les fichiers seront copiés dans /app.
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
 
-Copie du JAR
-dockerfile
-COPY target/*.jar app.jar
-Le JAR généré par Maven est copié dans l'image.
+### Explication
 
-Démarrage de l'application
-dockerfile
-CMD ["java", "-jar", "app.jar"]
-L'application Spring Boot est lancée au démarrage du conteneur.
+| Instruction | Description |
+|---|---|
+| `FROM` | Définit l'image Java de base |
+| `WORKDIR` | Définit le répertoire de travail |
+| `COPY` | Copie le fichier JAR généré par Maven |
+| `EXPOSE` | Documente le port utilisé par l'application |
+| `ENTRYPOINT` | Définit la commande de démarrage |
 
-📸 Capture 02 — Dockerfile
-https://./captures/02-dockerfile.png
+**Capture 02 — Création du Dockerfile**
 
-Nom de la capture :
+![Dockerfile](captures/02-dockerfile.png)
 
-text
-02-dockerfile.png
-6. Build Maven et Build Docker
-🎯 Objectif
-Compiler l'application avec Maven
+## 5. Build Maven et Docker
 
-Construire l'image Docker
+### 5.1 Compilation avec Maven
 
-🔨 Build Maven
-bash
+```bash
 mvn clean install
-Résultat attendu
-text
-[INFO] BUILD SUCCESS
-[INFO] Total time:  01:35 min
-🐳 Build Docker
-bash
-docker build -t jenkins-demo:1.0.0 .
-Résultat attendu
-text
-Successfully built 5fec75671049
-Successfully tagged jenkins-demo:1.0.0
-📸 Capture 03 — Build Maven (BUILD SUCCESS)
-https://./captures/03-mvn-build-success.png
+```
 
-Nom de la capture :
+Cette commande nettoie les fichiers générés précédemment, compile le projet, exécute les tests configurés et prépare les artefacts de l'application.
 
-text
-03-mvn-build-success.png
-📸 Capture 04 — Build Docker
-https://./captures/04-docker-build.png
-
-Nom de la capture :
-
-text
-04-docker-build.png
-7. Push de l'image sur Docker Hub
-🎯 Objectif
-Publier l'image Docker sur Docker Hub pour qu'elle soit accessible au cluster Kubernetes.
-
-🔐 Connexion à Docker Hub
-bash
-docker login -u arijbelaid
-🏷️ Tag de l'image
-bash
-docker tag jenkins-demo:1.0.0 arijbelaid/jenkins-demo:1.0.0
-🚀 Push de l'image
-bash
-docker push arijbelaid/jenkins-demo:1.0.0
-Résultat attendu
-text
-1.0.0: digest: sha256:5fec756710490240ab79ee9d3e0ba35eb7b5a76d7577fda54e3c099926d0003 size: 2051
-📸 Capture 05 — Docker Login
-https://./captures/05-docker-login.png
-
-Nom de la capture :
-
-text
-05-docker-login.png
-📸 Capture 06 — Tag de l'image
-https://./captures/06-docker-tag.png
-
-Nom de la capture :
-
-text
-06-docker-tag.png
-📸 Capture 07 — Push de l'image
-https://./captures/07-docker-push.png
-
-Nom de la capture :
-
-text
-07-docker-push.png
-8. Déploiement Kubernetes
-🎯 Objectif
-Déployer l'application sur le cluster Kubernetes et l'exposer via un Service NodePort.
-
-🚀 Test local du conteneur
-bash
-docker run --detach --name container-jenkins --publish 8080:8080 arijbelaid/jenkins-demo:1.0.0
-🧪 Test avec cURL
-bash
-curl http://localhost:8080
 Résultat attendu :
 
-html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Spring Boot HTML Page</title>
-...
-⚙️ Application du Deployment
-bash
+```text
+[INFO] BUILD SUCCESS
+```
+
+**Capture 03 — Build Maven réussi**
+
+![Build Maven](captures/03-mvn-build-success.png)
+
+### 5.2 Construction de l'image Docker
+
+```bash
+docker build -t jenkins-demo:1.0.0 .
+```
+
+Vérification :
+
+```bash
+docker images
+```
+
+**Capture 04 — Construction de l'image Docker**
+
+![Build Docker](captures/04-docker-build.png)
+
+## 6. Publication sur Docker Hub
+
+L'image doit être publiée dans un registre accessible aux nœuds Kubernetes.
+
+### 6.1 Connexion à Docker Hub
+
+```bash
+docker login -u arijbelaid
+```
+
+Utiliser l'authentification demandée par Docker. Ne jamais enregistrer un mot de passe directement dans le dépôt GitHub.
+
+**Capture 05 — Connexion à Docker Hub**
+
+![Docker Login](captures/05-docker-login.png)
+
+### 6.2 Tag de l'image
+
+```bash
+docker tag jenkins-demo:1.0.0 arijbelaid/jenkins-demo:1.0.0
+```
+
+**Capture 06 — Tag de l'image**
+
+![Docker Tag](captures/06-docker-tag.png)
+
+### 6.3 Publication de l'image
+
+```bash
+docker push arijbelaid/jenkins-demo:1.0.0
+```
+
+Vérifier ensuite que l'image est disponible dans le dépôt Docker Hub :
+
+[Docker Hub — arijbelaid](https://hub.docker.com/u/arijbelaid)
+
+**Capture 07 — Publication de l'image**
+
+![Docker Push](captures/07-docker-push.png)
+
+## 7. Déploiement Kubernetes
+
+### 7.1 Test local du conteneur
+
+```bash
+docker run -d \
+  --name container-jenkins \
+  -p 8080:8080 \
+  arijbelaid/jenkins-demo:1.0.0
+```
+
+Vérifier son état :
+
+```bash
+docker ps
+docker logs container-jenkins
+```
+
+**Capture 08 — Exécution du conteneur Docker**
+
+![Docker Run](captures/08-docker-run.png)
+
+### 7.2 Test de l'application
+
+```bash
+curl http://localhost:8080
+```
+
+Si l'application utilise un endpoint différent de `/`, adapter l'URL au contrôleur ou à la page réellement disponible.
+
+**Capture 09 — Test de l'application avec cURL**
+
+![Test cURL](captures/09-curl-test.png)
+
+### 7.3 Application des manifests Kubernetes
+
+Les fichiers `deployment.yaml` et `service.yaml` décrivent respectivement le déploiement et l'exposition de l'application.
+
+```bash
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
-Résultat attendu
-text
-deployment.apps/spring-app-deployment created
-service/spring-app-service created
-📸 Capture 08 — Docker Run
-https://./captures/08-docker-run.png
+```
 
-Nom de la capture :
+Vérifier les ressources :
 
-text
-08-docker-run.png
-📸 Capture 09 — Test cURL
-https://./captures/09-curl-test.png
+```bash
+kubectl get deployments
+kubectl get pods -o wide
+kubectl get services
+```
 
-Nom de la capture :
+**Capture 10 — Déploiement Kubernetes**
 
-text
-09-curl-test.png
-📸 Capture 10 — Déploiement Kubernetes
-https://./captures/10-k8s-deployment.png
+![Déploiement Kubernetes](captures/10-k8s-deployment.png)
 
-Nom de la capture :
+## 8. Installation de Jenkins
 
-text
-10-k8s-deployment.png
-9. Installation de Jenkins
-🎯 Objectif
-Installer Jenkins en tant que service sur le nœud master pour automatiser les pipelines CI/CD.
+Jenkins automatise les tâches de compilation, de construction et de déploiement.
 
-☕ Installation de Java
-bash
+### 8.1 Installation de Java
+
+```bash
 sudo apt update
-sudo apt install -y openjdk-17-jdk
-🔑 Ajout de la clé GPG Jenkins
-bash
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key | \
-sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-📦 Ajout du dépôt Jenkins
-bash
-echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | \
-sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
-🚀 Installation de Jenkins
-bash
+sudo apt install -y fontconfig openjdk-17-jdk
+```
+
+Vérifier la version :
+
+```bash
+java -version
+```
+
+### 8.2 Configuration du dépôt Jenkins
+
+Consulter la [documentation officielle d'installation de Jenkins](https://www.jenkins.io/doc/book/installing/linux/) pour utiliser le dépôt et la clé correspondant à la version actuelle.
+
+Pour une distribution compatible avec le dépôt Debian stable, les commandes de configuration sont :
+
+```bash
+sudo mkdir -p /etc/apt/keyrings
+
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" \
+  | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+```
+
+> Vérifier la disponibilité de la clé et la compatibilité du dépôt avec la version d'Ubuntu installée avant de poursuivre.
+
+### 8.3 Installation et démarrage
+
+```bash
 sudo apt update
 sudo apt install -y jenkins
-sudo systemctl start jenkins
-sudo systemctl enable jenkins
-✅ Vérification du service
-bash
+
+sudo systemctl enable --now jenkins
 sudo systemctl status jenkins
-Résultat attendu :
+```
 
-text
-Active: active (running)
-🔥 Ouverture du port 8080
-bash
+Le service doit être actif.
+
+### 8.4 Accès à l'interface Jenkins
+
+Si le port 8080 est autorisé sur la machine :
+
+```bash
 sudo ufw allow 8080/tcp
-🔑 Récupération du mot de passe initial
-bash
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-🌐 Accès depuis Windows
-text
-http://192.168.159.15:8080
-10. Configuration du job Freestyle freestyle_demo
-🎯 Objectif
-Créer un job Freestyle nommé freestyle_demo avec un script shell.
+```
 
-📄 Script shell
-bash
+Récupérer le mot de passe initial :
+
+```bash
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
+
+Depuis le navigateur, ouvrir :
+
+```text
+http://192.168.159.15:8080
+```
+
+Remplacer l'adresse IP si nécessaire.
+
+## 9. Création du job Freestyle
+
+Le premier job Jenkins, nommé `freestyle_demo`, permet de vérifier l'exécution d'un script shell.
+
+### 9.1 Création du job
+
+Dans l'interface Jenkins :
+
+1. Cliquer sur **Nouvel Item**.
+2. Saisir `freestyle_demo`.
+3. Choisir **Freestyle project**.
+4. Cliquer sur **OK**.
+5. Ajouter une étape **Exécuter un script shell**.
+
+### 9.2 Script shell
+
+```bash
 echo 'Bonjour'
 ls -l
 echo 'Bonjour DevOps' > test.txt
 ls -l
-🔧 Étapes dans Jenkins
-Nouvel Item → freestyle_demo → Freestyle project → OK
+```
 
-Étapes du build → Ajouter une étape au build → Exécuter un script shell
+Enregistrer la configuration, puis lancer un build.
 
-Coller le script
+### 9.3 Vérification
 
-Enregistrer → Lancer un build
+Résultat attendu dans la console :
 
-✅ Résultat du build
-text
-+ echo Bonjour
+```text
 Bonjour
-+ ls -l
-total 0
-+ echo 'Bonjour DevOps'
-+ ls -l
-total 4
--rw-r--r-- 1 jenkins jenkins 15 Oct 14 21:37 test.txt
+Bonjour DevOps
 Finished: SUCCESS
-📸 Capture 11 — Configuration du job Freestyle
-https://./captures/11-freestyle-config.png
+```
 
-Nom de la capture :
+**Captures**
 
-text
-11-freestyle-config.png
-📸 Capture 12 — Tableau de bord Jenkins
-https://./captures/12-freestyle-dashboard.png
+- [Capture 11 — Configuration du job](captures/11-freestyle-config.png)
+- [Capture 12 — Tableau de bord Jenkins](captures/12-freestyle-dashboard.png)
+- [Capture 13 — Console du build](captures/13-freestyle-build-console.png)
+- [Capture 14 — Vérification sur la VM](captures/14-freestyle-verify-vm.png)
 
-Nom de la capture :
+Vérification sur le système :
 
-text
-12-freestyle-dashboard.png
-📸 Capture 13 — Console Output du build
-https://./captures/13-freestyle-build-console.png
-
-Nom de la capture :
-
-text
-13-freestyle-build-console.png
-📸 Capture 14 — Vérification sur la VM
-https://./captures/14-freestyle-verify-vm.png
-
-Nom de la capture :
-
-text
-14-freestyle-verify-vm.png
-🧪 Vérification sur la VM
-bash
+```bash
 sudo ls -l /var/lib/jenkins/workspace/freestyle_demo
 sudo cat /var/lib/jenkins/workspace/freestyle_demo/test.txt
-Résultat :
+```
 
-text
+Contenu attendu :
+
+```text
 Bonjour DevOps
-11. Exécution du fichier Java Test.java
-🎯 Objectif
-Créer un fichier Test.java dans le workspace et l'exécuter via Jenkins.
+```
 
-📄 Contenu de Test.java
-java
+## 10. Compilation et exécution de Test.java
+
+Cette étape permet d'exécuter un programme Java depuis le job Jenkins.
+
+### 10.1 Création du fichier Java
+
+Dans le workspace du job, créer `Test.java` :
+
+```java
 public class Test {
     public static void main(String[] args) {
         System.out.println("Hi Master DevOps");
     }
 }
-📁 Création du fichier
-bash
-sudo nano /var/lib/jenkins/workspace/freestyle_demo/Test.java
-sudo chown jenkins:jenkins /var/lib/jenkins/workspace/freestyle_demo/Test.java
-🔧 Modification du job Jenkins
-Ajouter au script shell :
+```
 
-bash
+Pour un test pédagogique, le fichier peut être créé directement dans le workspace. Dans un pipeline durable, il est préférable de versionner les sources dans GitHub.
+
+### 10.2 Compilation et exécution
+
+Ajouter les commandes suivantes au script shell :
+
+```bash
 echo '--- Compilation et exécution de Test.java ---'
 javac Test.java
 java Test
-✅ Résultat
-text
-+ javac Test.java
-+ java Test
-Hi Master DevOps
-Finished: SUCCESS
-📸 Capture 15 — Fichier Test.java
-https://./captures/15-testjava-nano.png
+```
 
-Nom de la capture :
-
-text
-15-testjava-nano.png
-📸 Capture 16 — Attribution des droits
-https://./captures/16-testjava-chown.png
-
-Nom de la capture :
-
-text
-16-testjava-chown.png
-📸 Capture 17 — Configuration du job
-https://./captures/17-testjava-job-config.png
-
-Nom de la capture :
-
-text
-17-testjava-job-config.png
-📸 Capture 18 — Console Output
-https://./captures/18-testjava-console.png
-
-Nom de la capture :
-
-text
-18-testjava-console.png
-12. Récupération du script depuis GitHub
-🎯 Objectif
-Modifier le job pour récupérer le script depuis votre dépôt GitHub.
-
-🔗 Dépôt GitHub jenkins-scripts
-👉 https://github.com/arijbelaid/jenkins-scripts
-
-📄 script.sh
-bash
-#!/bin/bash
-echo 'Bonjour depuis GitHub'
-ls -l
-echo 'Bonjour DevOps' > test.txt
-ls -l
-echo '--- Compilation et exécution de Test.java ---'
-javac Test.java
-java Test
-🔧 Configuration Git dans Jenkins
-Dans Gestion de code source → Git :
-
-Paramètre	Valeur
-Repository URL	https://github.com/arijbelaid/jenkins-scripts.git
-Branch Specifier	*/main
-Puis dans Étapes du build :
-
-bash
-chmod +x script.sh
-./script.sh
-📸 Capture 19 — Fichiers sur GitHub
-https://./captures/19-github-script.png
-
-Nom de la capture :
-
-text
-19-github-script.png
-📸 Capture 20 — Push vers GitHub
-https://./captures/20-github-push.png
-
-Nom de la capture :
-
-text
-20-github-push.png
-13. Déclenchement automatique (H/5)
-🎯 Objectif
-Automatiser le job :
-
-Déclenchement toutes les 5 minutes
-
-Conservation des 2 derniers builds
-
-Suppression du workspace avant chaque build
-
-🔧 Configuration
-Dans la section Déclencheurs de build :
-
-Paramètre	Valeur
-Construire périodiquement	✅ Coché
-Planning	H/5 * * * *
-Dans la section Général :
-
-Paramètre	Valeur
-Supprimer les anciens builds	✅ Coché
-Stratégie	Rotation des journaux
-Nombre maximum de builds	2
-Dans la section Environment :
-
-Paramètre	Valeur
-Delete workspace before build starts	✅ Coché
-📸 Capture 21 — Configuration du trigger
-https://./captures/21-trigger-config.png
-
-Nom de la capture :
-
-text
-21-trigger-config.png
-14. Préparation de Jenkins pour Kubernetes
-🎯 Objectif
-Donner à l'utilisateur jenkins les droits pour utiliser Docker et kubectl.
-
-👤 Ajouter jenkins au groupe docker
-bash
-sudo usermod -aG docker jenkins
-sudo systemctl restart jenkins
-🔐 Copier le kubeconfig pour jenkins
-bash
-sudo mkdir -p /var/lib/jenkins/.kube
-sudo cp /home/arij/.kube/config /var/lib/jenkins/.kube/config
-sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
-sudo chmod 600 /var/lib/jenkins/.kube/config
-✅ Vérification des droits
-bash
-sudo -u jenkins docker ps
-sudo -u jenkins kubectl get nodes
 Résultat attendu :
 
-text
-NAME      STATUS   ROLES           AGE   VERSION
-master    Ready    control-plane   14h   v1.31.14
-worker1   Ready    <none>          14h   v1.31.14
-worker2   Ready    <none>          14h   v1.31.14
-📸 Capture 22 — Ajout au groupe docker
-https://./captures/22-jenkins-docker-group.png
+```text
+Hi Master DevOps
+Finished: SUCCESS
+```
 
-Nom de la capture :
+**Captures**
 
-text
-22-jenkins-docker-group.png
-📸 Capture 23 — Copie du kubeconfig
-https://./captures/23-kubeconfig-copy.png
+- [Capture 15 — Fichier Test.java](captures/15-testjava-nano.png)
+- [Capture 16 — Attribution des droits](captures/16-testjava-chown.png)
+- [Capture 17 — Configuration du job](captures/17-testjava-job-config.png)
+- [Capture 18 — Console du build](captures/18-testjava-console.png)
 
-Nom de la capture :
+## 11. Intégration avec GitHub
 
-text
-23-kubeconfig-copy.png
-📸 Capture 24 — Vérification des droits
-https://./captures/24-jenkins-permissions.png
+Le script de build est hébergé dans le dépôt suivant :
 
-Nom de la capture :
+[arijbelaid/jenkins-scripts](https://github.com/arijbelaid/jenkins-scripts)
 
-text
-24-jenkins-permissions.png
-15. Challenge — Pipeline complet deploy_spring_k8s
-🎯 Objectif
-Créer un job Freestyle qui automatise tout le pipeline :
+### 11.1 Exemple de script `script.sh`
 
-Build Maven
-
-Correction du Dockerfile
-
-Build Docker
-
-Push Docker Hub
-
-Déploiement Kubernetes
-
-Vérification
-
-📄 Script complet
-bash
+```bash
 #!/bin/bash
 set -e
+
+echo 'Bonjour depuis GitHub'
+ls -l
+
+echo 'Bonjour DevOps' > test.txt
+ls -l
+
+echo '--- Compilation et exécution de Test.java ---'
+javac Test.java
+java Test
+```
+
+Le fichier `Test.java` doit également être présent dans le dépôt récupéré par Jenkins pour que les commandes `javac` et `java` fonctionnent.
+
+### 11.2 Configuration du dépôt dans Jenkins
+
+Dans la configuration du job, sous **Gestion de code source → Git** :
+
+| Paramètre | Valeur |
+|---|---|
+| Repository URL | `https://github.com/arijbelaid/jenkins-scripts.git` |
+| Branch Specifier | `*/main` |
+
+Dans la section de build, exécuter :
+
+```bash
+chmod +x script.sh
+./script.sh
+```
+
+**Captures**
+
+- [Capture 19 — Fichiers sur GitHub](captures/19-github-script.png)
+- [Capture 20 — Publication sur GitHub](captures/20-github-push.png)
+
+## 12. Déclenchement automatique
+
+Le job peut être configuré pour s'exécuter périodiquement.
+
+### 12.1 Planification
+
+Dans la section **Déclencheurs de build**, cocher **Construire périodiquement** et utiliser :
+
+```text
+H/5 * * * *
+```
+
+Cette expression planifie une exécution environ toutes les cinq minutes, selon la répartition déterminée par Jenkins.
+
+### 12.2 Conservation des builds
+
+Dans la section de conservation des anciens builds, activer la rotation des journaux et définir une limite de deux builds.
+
+### 12.3 Nettoyage du workspace
+
+Activer l'option **Delete workspace before build starts** si le plugin correspondant est installé et si cette option est disponible.
+
+**Capture 21 — Configuration du déclenchement périodique**
+
+![Configuration du trigger](captures/21-trigger-config.png)
+
+## 13. Configuration de Jenkins pour Docker et Kubernetes
+
+Pour exécuter le pipeline complet, l'utilisateur système Jenkins doit pouvoir utiliser Docker et accéder au cluster Kubernetes.
+
+### 13.1 Accès à Docker
+
+```bash
+sudo usermod -aG docker jenkins
+sudo systemctl restart jenkins
+```
+
+Tester l'accès :
+
+```bash
+sudo -u jenkins docker ps
+```
+
+> L'accès au groupe `docker` confère des privilèges élevés sur la machine. Il doit être accordé uniquement dans un environnement de TP maîtrisé.
+
+**Capture 22 — Ajout de Jenkins au groupe Docker**
+
+![Groupe Docker](captures/22-jenkins-docker-group.png)
+
+### 13.2 Configuration du kubeconfig
+
+Copier la configuration Kubernetes de l'utilisateur administrateur vers le compte Jenkins :
+
+```bash
+sudo mkdir -p /var/lib/jenkins/.kube
+
+sudo cp /home/arij/.kube/config \
+  /var/lib/jenkins/.kube/config
+
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
+sudo chmod 600 /var/lib/jenkins/.kube/config
+```
+
+**Important :** vérifier que le fichier kubeconfig utilise une adresse API accessible depuis Jenkins. Si le fichier contient des certificats intégrés ou des identifiants sensibles, protéger son accès et éviter toute publication dans GitHub.
+
+**Capture 23 — Configuration du kubeconfig**
+
+![Kubeconfig](captures/23-kubeconfig-copy.png)
+
+### 13.3 Vérification des accès
+
+```bash
+sudo -u jenkins kubectl get nodes
+sudo -u jenkins kubectl get pods --all-namespaces
+```
+
+Les trois nœuds doivent être en état `Ready`.
+
+**Capture 24 — Vérification des permissions**
+
+![Vérification des permissions](captures/24-jenkins-permissions.png)
+
+## 14. Pipeline automatisé complet
+
+Le job `deploy_spring_k8s` automatise les différentes opérations du pipeline.
+
+### 14.1 Étapes du pipeline
+
+1. Récupération du code source depuis GitHub.
+2. Compilation Maven.
+3. Vérification du Dockerfile.
+4. Construction de l'image Docker.
+5. Authentification auprès de Docker Hub.
+6. Publication de l'image.
+7. Application des manifests Kubernetes.
+8. Redémarrage du déploiement.
+9. Vérification des pods et du service.
+
+### 14.2 Script de déploiement
+
+Dans le job Freestyle, après avoir configuré le dépôt Git et les identifiants nécessaires, ajouter une étape d'exécution shell :
+
+```bash
+#!/bin/bash
+set -e
+
+IMAGE="arijbelaid/jenkins-demo:latest"
+DEPLOYMENT="spring-app-deployment"
 
 echo "=== 1. BUILD MAVEN ==="
 mvn clean install -DskipTests
 
-echo "=== 2. CORRECTION DU DOCKERFILE ==="
-sed -i 's|openjdk:17-jdk-slim|eclipse-temurin:17-jre|g' Dockerfile
-sed -i 's|openjdk:17-jdk|eclipse-temurin:17-jre|g' Dockerfile
-sed -i 's|openjdk:17|eclipse-temurin:17-jre|g' Dockerfile
+echo "=== 2. VERIFICATION DU DOCKERFILE ==="
 cat Dockerfile
 
 echo "=== 3. BUILD DOCKER ==="
-docker build -t arijbelaid/jenkins-demo:latest .
+docker build -t "$IMAGE" .
 
 echo "=== 4. LOGIN DOCKER HUB ==="
-echo "$DOCKER_PASS" | docker login -u arijbelaid --password-stdin
+echo "$DOCKER_PASS" | docker login \
+  -u arijbelaid \
+  --password-stdin
 
 echo "=== 5. PUSH DOCKER HUB ==="
-docker push arijbelaid/jenkins-demo:latest
+docker push "$IMAGE"
 
-echo "=== 6. DÉPLOIEMENT KUBERNETES ==="
+echo "=== 6. DEPLOIEMENT KUBERNETES ==="
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
 
-echo "=== 7. REDÉMARRAGE DES PODS ==="
-kubectl rollout restart deployment/spring-app-deployment
+echo "=== 7. REDEMARRAGE DU DEPLOIEMENT ==="
+kubectl rollout restart "deployment/$DEPLOYMENT"
 
-echo "=== 8. VÉRIFICATION ==="
-kubectl get pods
+echo "=== 8. ATTENTE DU ROLLOUT ==="
+kubectl rollout status "deployment/$DEPLOYMENT" \
+  --timeout=180s
+
+echo "=== 9. VERIFICATION DES PODS ==="
+kubectl get pods -o wide
+
+echo "=== 10. VERIFICATION DU SERVICE ==="
 kubectl get svc
-📸 Capture 25 — Build du job
-https://./captures/25-deploy-k8s-build.png
+```
 
-Nom de la capture :
+**Configuration importante :**
 
-text
-25-deploy-k8s-build.png
-📸 Capture 26 — Console Output du déploiement
-https://./captures/26-deploy-k8s-console.png
+- Configurer `DOCKER_PASS` dans Jenkins comme identifiant secret ou variable d'environnement protégée. Ne pas inscrire le mot de passe directement dans le script ou le dépôt.
+- Installer Maven, Docker et `kubectl` sur l'agent Jenkins qui exécute le job.
+- Vérifier que le `Dockerfile` se trouve dans le workspace du job.
+- Vérifier que `deployment.yaml` et `service.yaml` utilisent la bonne image et le bon port.
+- Pour une utilisation plus sûre, préférer des tags d'image uniques plutôt que `latest`.
+- La commande de correction automatique du Dockerfile par `sed` n'est pas incluse ici : il est préférable de versionner un Dockerfile valide dans GitHub.
 
-Nom de la capture :
+### 14.3 Captures du pipeline
 
-text
-26-deploy-k8s-console.png
-16. Vérification finale
-🎯 Objectif
-Vérifier le bon fonctionnement du pipeline complet.
+- [Capture 25 — Exécution du build](captures/25-deploy-k8s-build.png)
+- [Capture 26 — Console du déploiement](captures/26-deploy-k8s-console.png)
 
-📊 Pods Kubernetes
-bash
-kubectl get pods
-Résultat :
+## 15. Vérification finale
 
-text
-NAME                                     READY   STATUS    RESTARTS   AGE
-spring-app-deployment-7859c4b57f-6gcq6   1/1     Running   0          97s
-spring-app-deployment-7859c4b57f-vmql    1/1     Running   0          83s
-🌐 Service NodePort
-bash
+### 15.1 Vérification des pods
+
+```bash
+kubectl get pods -o wide
+```
+
+Les pods de l'application doivent être en état `Running` et afficher un statut de disponibilité correct.
+
+### 15.2 Vérification du déploiement
+
+```bash
+kubectl rollout status deployment/spring-app-deployment
+kubectl get deployment spring-app-deployment
+```
+
+### 15.3 Vérification du service
+
+```bash
 kubectl get svc spring-app-service
-Résultat :
+```
 
-text
-NAME                 TYPE        CLUSTER-IP     PORT(S)          AGE
-spring-app-service   NodePort    10.102.25.36   2222:30263/TCP   14h
-🌍 Accès à l'application
-text
-http://192.168.159.15:30263
-Message affiché :
+Le service doit être de type `NodePort` si l'application est exposée de cette manière.
 
+### 15.4 Accès à l'application
+
+Dans l'environnement documenté, l'URL d'accès est :
+
+[http://192.168.159.15:30263](http://192.168.159.15:30263)
+
+Le port `30263` est celui relevé pendant le TP. Vérifier le port NodePort réel avec `kubectl get svc` avant d'utiliser cette URL.
+
+Message attendu dans l'application :
+
+```text
 Welcome to Jenkins Tutorial for Master DevOps and Cloud!
 
 Welcome to Jenkins CI/CD Pipeline for Spring Boot Microservice application deployed to Kubernetes using Helm
+```
 
-Docker - Minikube - Kubectl - Maven - SonarQube - Trivy - ArgoCD - Slack - Webhook - ngRok - Jenkins - Helm
+**Captures finales**
 
-📸 Capture 27 — Pods en Running
-https://./captures/27-k8s-pods-running.png
+- [Capture 27 — Pods Kubernetes en Running](captures/27-k8s-pods-running.png)
+- [Capture 28 — Test final de l'application](captures/28-application-test.png)
 
-Nom de la capture :
+## 16. Structure du dépôt
 
-text
-27-k8s-pods-running.png
-📸 Capture 28 — Application finale
-https://./captures/28-application-test.png
-
-Nom de la capture :
-
-text
-28-application-test.png
-🏆 Pipeline CI/CD complet
-text
-📦 Pipeline Jenkins CI/CD
-│
-├── 🟢 Stage 1 : Clone Repo               (récupère dépôt Git)
-├── 🟢 Stage 2 : Build Maven              (mvn clean install)
-├── 🟢 Stage 3 : Fix Dockerfile           (openjdk → eclipse-temurin)
-├── 🟢 Stage 4 : Build Docker Image       (docker build)
-├── 🟢 Stage 5 : Login Docker Hub         (docker login)
-├── 🟢 Stage 6 : Push Docker Hub          (docker push)
-├── 🟢 Stage 7 : Deploy Kubernetes        (kubectl apply)
-├── 🟢 Stage 8 : Restart Pods             (kubectl rollout restart)
-├── 🟢 Stage 9 : Verify Pods              (kubectl get pods)
-└── 🟢 Stage 10 : Get NodePort            (récupération du port)
-🧰 Technologies utilisées
-Versionnement
-Git
-
-GitHub
-
-SSH
-
-DevOps / CI-CD
-Ubuntu Server
-
-Jenkins
-
-Maven
-
-Docker
-
-Kubernetes
-
-containerd
-
-Flannel
-
-Application
-Java 17
-
-Spring Boot 2.1.5
-
-📁 Structure du projet
-text
+```text
 jenkins-scripts/
-│
-├── script.sh                          # Script du Step 3
-├── Test.java                          # Fichier Java du Step 2
 ├── README.md
-│
-└── captures/                          # 28 captures d'écran
+├── script.sh
+├── Test.java
+└── captures/
     ├── 01-clone-repo.png
     ├── 02-dockerfile.png
     ├── 03-mvn-build-success.png
@@ -776,14 +793,30 @@ jenkins-scripts/
     ├── 26-deploy-k8s-console.png
     ├── 27-k8s-pods-running.png
     └── 28-application-test.png
-🌐 Liens
-🔗 Dépôt GitHub
-👉 https://github.com/arijbelaid/jenkins-scripts
+```
 
-🐳 Docker Hub
-👉 https://hub.docker.com/u/arijbelaid
+## 17. Auteur et liens utiles
 
-👩‍💻 Auteur
-Arij Belaid
+**Auteur :** Arij Belaid
 
-Étudiante en Master Pro DevOps & Cloud
+**Formation :** Master Professionnel DevOps & Cloud
+
+### Ressources du projet
+
+- **Dépôt GitHub :** [arijbelaid/jenkins-scripts](https://github.com/arijbelaid/jenkins-scripts)
+- **Projet Spring Boot :** [wahid007/Jenkins-Demo](https://github.com/wahid007/Jenkins-Demo)
+- **Docker Hub :** [hub.docker.com/u/arijbelaid](https://hub.docker.com/u/arijbelaid)
+- **Documentation Jenkins :** [jenkins.io/doc](https://www.jenkins.io/doc/)
+- **Documentation Docker :** [docs.docker.com](https://docs.docker.com/)
+- **Documentation Kubernetes :** [kubernetes.io/docs](https://kubernetes.io/docs/)
+- **Documentation Maven :** [maven.apache.org](https://maven.apache.org/)
+
+---
+
+## 🏆 Conclusion
+
+Ce TP a permis de mettre en pratique les principales étapes d'un processus CI/CD : compilation d'une application Java avec Maven, création et publication d'une image Docker, configuration de Jenkins et déploiement sur un cluster Kubernetes.
+
+La combinaison de ces outils constitue une base pour comprendre l'automatisation des livraisons logicielles et les pratiques DevOps.
+
+*Projet réalisé dans un cadre pédagogique — Master Professionnel DevOps & Cloud.*
